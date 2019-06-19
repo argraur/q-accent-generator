@@ -1,1 +1,3 @@
 *.apk
+*.zip
+!template-magisk.zip
