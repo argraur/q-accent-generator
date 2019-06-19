@@ -29,11 +29,13 @@ remove_space() {
 
 zip_module() {
     cd $1
-    zip -r4 ../$1.zip *
+    zip -r4 ../out/$1.zip *
     cd ../
 }
 
 clear
+
+if test ! -e out; then mkdir out; fi
 
 echo "Welcome to Q Accent Generator!"
 echo ""
@@ -82,7 +84,7 @@ echo " Done"
 echo -n "[4/$STEPS] Signing overlay..."
 signapk tools/platform.x509.pem tools/platform.pk8 \
     $COLOR_NAME_LOWERCASE/dist/AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk \
-    AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk
+    out/AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk
 echo " Done"
 
 rm -rf $COLOR_NAME_LOWERCASE
@@ -96,15 +98,15 @@ if test "$1" = "-m"; then
     sed -i "s+MODULE_NAME+$COLOR_NAME+" $COLOR_NAME_LOWERCASE-magisk/module.prop
 
     mkdir $COLOR_NAME_LOWERCASE-magisk/system/product/overlay/AccentColor"$COLOR_NAME_NOSPACE"
-    cp AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk $COLOR_NAME_LOWERCASE-magisk/system/product/overlay/AccentColor"$COLOR_NAME_NOSPACE"/AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk
+    cp out/AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk $COLOR_NAME_LOWERCASE-magisk/system/product/overlay/AccentColor"$COLOR_NAME_NOSPACE"/AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk
     zip_module $COLOR_NAME_LOWERCASE-magisk >/dev/null
     rm -rf $COLOR_NAME_LOWERCASE-magisk
 
     echo " Done"
     echo ""
-    echo "$COLOR_NAME package: AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk"
-    echo "Magisk Module: $COLOR_NAME_LOWERCASE-magisk.zip"
+    echo "$COLOR_NAME package: out/AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk"
+    echo "Magisk Module: out/$COLOR_NAME_LOWERCASE-magisk.zip"
 else
     echo ""
-    echo "$COLOR_NAME package: AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk"
+    echo "$COLOR_NAME package: out/AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk"
 fi
