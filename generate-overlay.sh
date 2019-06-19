@@ -14,3 +14,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+throw_error() {
+    echo "FAILED: $1"; exit 1
+}
+
+to_lowercase() {
+    echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+remove_space() {
+    echo "$1" | sed 's+ ++'
+}
+
+clear
+
+echo "Welcome to Q Accent Generator!"
+echo ""
+sleep 1
+
+echo -n "Name of the new accent: "
+read COLOR_NAME
+
+COLOR_NAME_NOSPACE=$(remove_space "$COLOR_NAME")
+COLOR_NAME_LOWERCASE=$(to_lowercase "$COLOR_NAME_NOSPACE")
+
+echo ""
+
+echo -n "Accent for dark theme: "
+read DARK_ACCENT
+DARK_ACCENT=$(to_lowercase $DARK_ACCENT)
+echo ""
+
+echo "Leave empty to use accent on dark theme: "
+echo -n "Accent for light theme: "
+read LIGHT_ACCENT
+if test -z $LIGHT_ACCENT; then LIGHT_ACCENT=$DARK_ACCENT; fi
+LIGHT_ACCENT=$(to_lowercase $LIGHT_ACCENT)
+echo ""
+
+echo -n "[1/4] Unpacking template..."
+unzip -d $COLOR_NAME_LOWERCASE tools/template.zip > /dev/null
+echo " Done"
+
+echo -n "[2/4] Generating overlay..."
+sed -i "s+COLORNAME+$COLOR_NAME_LOWERCASE+" $COLOR_NAME_LOWERCASE/{AndroidManifest.xml,res/values/public.xml,res/values/strings.xml}
+sed -i "s+NAME+$COLOR_NAME_NOSPACE+" $COLOR_NAME_LOWERCASE/apktool.yml
+sed -i "s+NAME+$COLOR_NAME+" $COLOR_NAME_LOWERCASE/res/values/strings.xml
+sed -i "s+DARK_COLOR+$DARK_ACCENT+" $COLOR_NAME_LOWERCASE/res/values/colors.xml
+sed -i "s+LIGHT_COLOR+$LIGHT_ACCENT+" $COLOR_NAME_LOWERCASE/res/values/colors.xml
+echo " Done"
+
+echo -n "[3/4] Building overlay..."
+java -jar tools/apktool.jar --quiet b $COLOR_NAME_LOWERCASE
+if [ ! $? == 0 ]; then throw_error "Error during building overlay"; fi
+echo " Done"
+
+echo -n "[4/4] Signing overlay..."
+signapk tools/platform.x509.pem tools/platform.pk8 \
+    $COLOR_NAME_LOWERCASE/dist/AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk \
+    AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk
+echo " Done"
+echo ""
+
+rm -rf $COLOR_NAME_LOWERCASE
+echo "$COLOR_NAME package: AccentColor"$COLOR_NAME_NOSPACE"Overlay.apk"
