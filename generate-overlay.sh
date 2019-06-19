@@ -23,6 +23,10 @@ to_lowercase() {
     echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
+fix_color() {
+    echo "$1" | sed 's+#+#ff+'
+}
+
 remove_space() {
     echo "$1" | sed 's+ ++'
 }
@@ -63,6 +67,11 @@ read LIGHT_ACCENT
 if test -z $LIGHT_ACCENT; then LIGHT_ACCENT=$DARK_ACCENT; fi
 LIGHT_ACCENT=$(to_lowercase $LIGHT_ACCENT)
 echo ""
+
+if test ! ${#DARK_ACCENT} -eq 9; then DARK_ACCENT=$(fix_color $DARK_ACCENT); fi
+if test ! ${#LIGHT_ACCENT} -eq 9; then LIGHT_ACCENT=$(fix_color $LIGHT_ACCENT); fi
+if test ! ${#DARK_ACCENT} -eq 9; then throw_error "Bad color name!"; fi
+if test ! ${#LIGHT_ACCENT} -eq 9; then throw_error "Bad color name!"; fi
 
 echo -n "[1/$STEPS] Unpacking template..."
 unzip -d $COLOR_NAME_LOWERCASE tools/template.zip > /dev/null
